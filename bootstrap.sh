@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/bin/sh
 
 set -e
@@ -99,3 +100,5 @@ sudo ln -s gradle-$version ${GRADLEPATH}/gradle
 echo "export PATH=${GRADLEPATH}/gradle-$version/bin:$PATH"
 export PATH=${GRADLEPATH}/gradle-$version/bin:$PATH
 gradle -v
+=======
+>>>>>>> e668aa4 (Modernize build system and upgrade to AWS SDK v2)
