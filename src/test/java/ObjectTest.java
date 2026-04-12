@@ -52,7 +52,7 @@ import software.amazon.awssdk.transfer.s3.model.FileUpload;
 public class ObjectTest {
 
 	private static S3 utils = S3.getInstance();
-	boolean useV4Signature = false;
+	boolean useV4Signature = true;
 	S3Client s3Client = utils.getS3V2Client(useV4Signature);
 	S3AsyncClient s3AsyncClient = utils.getS3V2AsyncClient();
 	String prefix = utils.getPrefix();
@@ -69,21 +69,21 @@ public class ObjectTest {
 	@AfterClass
 	public void tearDownAfterClass() throws Exception {
 		S3.logger.debug("TeardownAfterClass");
-		utils.teradownRetries = 0;
+		utils.teradownRetriesV2 = 0;
 		utils.tearDownV2(s3Client);
 	}
 
 	@AfterMethod
 	public void tearDownAfterMethod() throws Exception {
 		S3.logger.debug("TeardownAfterMethod");
-		utils.teradownRetries = 0;
+		utils.teradownRetriesV2 = 0;
 		utils.tearDownV2(s3Client);
 	}
 
 	@BeforeMethod
 	public void setUp() throws Exception {
 		S3.logger.debug("TeardownBeforeMethod");
-		utils.teradownRetries = 0;
+		utils.teradownRetriesV2 = 0;
 		utils.tearDownV2(s3Client);
 	}
 
@@ -1800,16 +1800,18 @@ public class ObjectTest {
 
 	@Test(description = "Upload of a file to non existant bucket using HLAPI, fails!")
 	public void testUploadFileHLAPINonExistantBucket() {
-
+		try{
 		String bucket_name = utils.getBucketName(prefix);
 		String key = "key1";
 
 		String filePath = "./data/sample.txt";
 		utils.createFile(filePath, 256 * 1024);
 
-		CompletedFileUpload upl = utils.UploadFileHLAPIV2(s3AsyncClient, bucket_name, key, filePath);
-		// The V2 utility swallows exceptions and returns null
-		AssertJUnit.assertNull(upl);
+		utils.UploadFileHLAPIV2(s3AsyncClient, bucket_name, key, filePath);
+		Assert.fail("Expected 404 NoSuchBucket");
+		}catch(S3Exception e){
+			AssertJUnit.assertEquals(e.awsErrorDetails().errorCode(), "NoSuchBucket");
+		}
 	}
 
 	@Test(description = "Multipart Upload for file using HLAPI, succeeds!")

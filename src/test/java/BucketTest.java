@@ -13,11 +13,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-
 public class BucketTest {
 
     private static S3 utils = S3.getInstance();
-    boolean useV4Signature = false;
+    boolean useV4Signature = true;
     S3Client s3Client = utils.getS3V2Client(useV4Signature);
     String prefix = utils.getPrefix();
 
@@ -32,20 +31,20 @@ public class BucketTest {
     @AfterClass
     public void tearDownAfterClass() throws Exception {
         S3.logger.debug("TeardownAfterClass");
-        utils.teradownRetries = 0;
+        utils.teradownRetriesV2 = 0;
     }
 
     @AfterMethod
     public void tearDownAfterMethod() throws Exception {
         S3.logger.debug("TeardownAfterMethod");
-        utils.teradownRetries = 0;
+        utils.teradownRetriesV2 = 0;
         utils.tearDownV2(s3Client);
     }
 
     @BeforeMethod
     public void setUp() throws Exception {
         S3.logger.debug("TeardownBeforeMethod");
-        utils.teradownRetries = 0;
+        utils.teradownRetriesV2 = 0;
         utils.tearDownV2(s3Client);
     }
 
@@ -59,6 +58,7 @@ public class BucketTest {
 
         AssertJUnit.assertTrue(list.contents().isEmpty());
         s3v2.deleteBucket(b -> b.bucket(bucketName));
+        s3v2.close();
     }
 
     @Test(description = "deleting non existant bucket returns NoSuchBucket")
@@ -214,7 +214,7 @@ public class BucketTest {
             AssertJUnit.fail("Expected 403 SignatureDoesNotMatch");
 
         } catch (S3Exception err) {
-           String errorCode = err.awsErrorDetails().errorCode();
+            String errorCode = err.awsErrorDetails().errorCode();
             System.out.println("RGW Returned Error Code: " + err.statusCode() + " " + err.awsErrorDetails().toString());
             // Shows an Acces Denied error in the logs
             // Not sure why Ideally should return the SignatureDoesNotMatch error
@@ -228,9 +228,9 @@ public class BucketTest {
 
     @Test(description = "create w/ empty content length, fails!")
     public void testBucketCreateContentlengthEmpty() {
-     
+
         String bucket_name = utils.getBucketName(prefix);
-     
+
         try {
             CreateBucketRequest bktRequest = CreateBucketRequest.builder()
                     .bucket(bucket_name)
@@ -249,14 +249,13 @@ public class BucketTest {
 
             AssertJUnit.assertTrue("Expected an Auth error but got: " + errorCode, isAuthError);
         }
-     }
+    }
 
-    
     @Test(description = "create w/ unreadable authorization, fails!")
     public void testBucketCreateBadAuthorizationUnreadable() {
-     
+
         String bucket_name = utils.getBucketName(prefix);
-     
+
         try {
             CreateBucketRequest bktRequest = CreateBucketRequest.builder()
                     .bucket(bucket_name)
@@ -275,16 +274,15 @@ public class BucketTest {
 
             AssertJUnit.assertTrue("Expected an Auth error but got: " + errorCode, isAuthError);
         }
-     }
-     
+    }
 
     @Test(description = "create w/ empty authorization, fails!")
     public void testBucketCreateBadAuthorizationEmpty() {
-     
+
         String bucket_name = utils.getBucketName(prefix);
-     
+
         try {
-     
+
             CreateBucketRequest bktRequest = CreateBucketRequest.builder()
                     .bucket(bucket_name)
                     .overrideConfiguration(o -> o.putHeader("Authorization", ""))
@@ -292,19 +290,19 @@ public class BucketTest {
             s3Client.createBucket(bktRequest);
             AssertJUnit.fail("Expected 403 SignatureDoesNotMatch");
         } catch (S3Exception err) {
-            // Shows an Acces Denied error more relavnt and thus changed to expect this instead of SignatureDoesNotMatch error
+            // Shows an Acces Denied error more relavnt and thus changed to expect this
+            // instead of SignatureDoesNotMatch error
             AssertJUnit.assertEquals(err.awsErrorDetails().errorCode(), "AccessDenied");
         }
-     }
-     
+    }
 
     @Test(description = "create w/no authorization, fails!")
     public void testBucketCreateBadAuthorizationNone() {
-     
+
         String bucket_name = utils.getBucketName(prefix);
-     
+
         try {
-     
+
             CreateBucketRequest bktRequest = CreateBucketRequest.builder()
                     .bucket(bucket_name)
                     .overrideConfiguration(o -> o.putHeader("Authorization", " "))
@@ -312,10 +310,10 @@ public class BucketTest {
             s3Client.createBucket(bktRequest);
             AssertJUnit.fail("Expected 403 SignatureDoesNotMatch");
         } catch (S3Exception err) {
-             // Shows an Acces Denied error more relavnt and thus changed to expect this instead of SignatureDoesNotMatch error
+            // Shows an Acces Denied error more relavnt and thus changed to expect this
+            // instead of SignatureDoesNotMatch error
             AssertJUnit.assertEquals(err.awsErrorDetails().errorCode(), "AccessDenied");
         }
-     }
-     
+    }
 
 }

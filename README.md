@@ -24,18 +24,19 @@ The modernized **bootstrap.sh** script installs **OpenJDK 21**, **Maven**, and *
     ./bootstrap.sh
 ```
 
-### Configuration
+### Edit Configuration
 
-    cp config.properties.sample config.properties
+The tests require a configuration file to connect to an RGW instance. 
 
-Edit `config.properties` to match your RGW credentials and endpoint:
-* `endpoint`: Usually `http://localhost:8000/` for local builds.
-* `is_secure`: Set to `false` if not using SSL.
-* `region`: Default is `us-east-1` (or your RGW zone).
+1. Go to the project directory:
+   `cd java_s3tests`
+2. Create your config file from the sample:
+   `cp config.properties.sample config.properties`
+3. Edit `config.properties` with your RGW credentials (access_key, secret_key, and host).
 
 ### Running the Tests
 
-You can now use either **Maven** (preferred for workunits) or **Gradle**.
+Either **Maven** (preferred for workunits) or **Gradle** , can be used for the testrun.
 
 #### Using Maven
 Run all tests:
